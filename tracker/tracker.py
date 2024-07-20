@@ -78,8 +78,8 @@ class Tracker:
                 pickle.dump(tracks,f)
 
         return tracks
-    
-    def draw_annotations(self,video_frames, tracks,team_ball_control):
+     
+    def draw_annotations(self,video_frames, tracks):
         output_video_frames= []
         for frame_num, frame in enumerate(video_frames):
             frame = frame.copy()
@@ -90,8 +90,18 @@ class Tracker:
 
             # Draw Players
             for track_id, player in player_dict.items():
-                color =(0,0,255)
+                color = tracks["players"][frame_num][track_id].get("team_color",(0,255,0))
                 frame = self.draw_ellipse(frame, player["bbox"],color, track_id)
+            # Draw Refrees
+            for track_id, player in referee_dict.items():
+                color =(0,255,255)
+                frame = self.draw_ellipse(frame, player["bbox"],color, track_id)
+            # Draw ball 
+             
+ 
+
+            output_video_frames.append(frame)
+        return output_video_frames
 
     def draw_ellipse(self,frame,bbox,color,track_id=None):
         y2 = int(bbox[3])
@@ -138,4 +148,18 @@ class Tracker:
                 2
             )
 
+        return frame
+    
+
+    def draw_traingle(self,frame,bbox,color):
+        y= int(bbox[1])
+        x,_ = get_center_of_bbox(bbox)
+
+        triangle_points = np.array([
+            [x,y],
+            [x-10,y-20],
+            [x+10,y-20],
+        ])
+        cv2.drawContours(frame, [triangle_points],0,color, cv2.FILLED)
+        cv2.drawContours(frame, [triangle_points],0,(0,0,0), 2)
         return frame
