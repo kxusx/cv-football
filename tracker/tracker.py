@@ -97,7 +97,9 @@ class Tracker:
                 color =(0,255,255)
                 frame = self.draw_ellipse(frame, player["bbox"],color, track_id)
             # Draw ball 
-             
+            for track_id, ball in ball_dict.items():
+                frame = self.draw_traingle(frame, ball["bbox"],(0,255,0))
+
  
 
             output_video_frames.append(frame)
@@ -150,6 +152,17 @@ class Tracker:
 
         return frame
     
+    def interpolate_ball_positions(self,ball_positions):
+        ball_positions = [x.get(1,{}).get('bbox',[]) for x in ball_positions]
+        df_ball_positions = pd.DataFrame(ball_positions,columns=['x1','y1','x2','y2'])
+
+        # Interpolate missing values
+        df_ball_positions = df_ball_positions.interpolate()
+        df_ball_positions = df_ball_positions.bfill()
+
+        ball_positions = [{1: {"bbox":x}} for x in df_ball_positions.to_numpy().tolist()]
+
+        return ball_positions
 
     def draw_traingle(self,frame,bbox,color):
         y= int(bbox[1])
